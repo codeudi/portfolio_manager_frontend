@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Capital Catalyst Portfolio Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="website-name">Capital Catalyst</div>
+        <div class="feature-buttons">
+            <button class="feature-btn active" id="dashboard-btn">Dashboard</button>
+            <button class="feature-btn" id="visualize-btn">Visualize Portfolio</button>
+            <button class="feature-btn" id="transactions-btn">Transactions</button>
+            <button class="feature-btn" id="mutualfunds-btn">Mutual Funds</button>
+            <button class="feature-btn" id="calculatetax-btn">Calculate Tax</button>
+        </div>
+    </div>
+
+    <div class="container">
+
+        <!-- ========== DASHBOARD SECTION ========== -->
+        <div id="dashboard-section">
+            <h1>Portfolio Dashboard</h1>
+            <div class="subtitle">Track your investments and market performance!</div>
+            <div class="dashboard-cards">
+                <div class="card">
+                    <div class="label">Portfolio Value</div>
+                    <div class="value" id="portfolio-value">$<span>23000</span></div>
+                </div>
+                <div class="card">
+                    <div class="label">Total Invested</div>
+                    <div class="value" id="total-invested"><span>20000</span></div>
+                </div>
+                <div class="card">
+                    <div class="label">Total P&amp;L</div>
+                    <div class="value positive" id="total-pnl">+$3000</div>
+                </div>
+                <div class="card">
+                    <div class="label">Day Change</div>
+                    <div class="value positive" id="day-change">+$100</div>
+                </div>
+            </div>
+            <div class="holdings-section">
+                <div class="holdings-header">
+                    <div class="holdings-title">Holdings</div>
+                    <button class="add-stock-btn" id="add-stock-btn">+ Add Stock</button>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Symbol</th>
+                            <th>Name</th>
+                            <th>Qty</th>
+                            <th>Buy Price</th>
+                            <th>Current Price</th>
+                            <th>Day Change</th>
+                            <th>P&amp;L</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+                    </tbody>
+                </table>
+            </div>
+            <!-- Add Stock Modal -->
+<div id="add-stock-modal" class="modal" style="display:none;">
+    <div class="modal-content">
+        <span class="close-btn" id="close-stock-modal">&times;</span>
+        <h2>Add Stock</h2>
+        <form id="add-stock-form">
+            <label>
+                Ticker Symbol:
+                <input type="text" id="stock-symbol" placeholder="E.g., AAPL" required>
+            </label>
+            <label>
+                Name:
+                <input type="text" id="stock-name" placeholder="E.g., Apple Inc." required>
+            </label>
+            <label>
+                Quantity:
+                <input type="number" id="stock-quantity" placeholder="E.g., 10" min="1" required>
+            </label>
+            <label>
+                Buy Price ($):
+                <input type="number" id="stock-buy-price" placeholder="E.g., 150" min="0" step="0.01" required>
+            </label>
+            <label>
+                Buy Date:
+                <input type="date" id="stock-buy-date" required>
+            </label>
+            <button type="submit" class="submit-btn">Add Stock</button>
+        </form>
+    </div>
+</div>
+        </div>
+
+        <!-- ========== VISUALIZE SECTION ========== -->
+        <div id="visualize-section" style="display:none;">
+            <h1>Portfolio Overview</h1>
+            <div class="subtitle">Your key portfolio statistics in a visual snapshot</div>
+            <div class="visualize-content">
+                <div class="glass-pie">
+                    <div class="pie-chart-outer">
+                        <div class="pie-chart-animated" id="pieChart"></div>
+                        <div class="pie-center-label">
+                            <span class="total-label">Portfolio<br>Value</span>
+                            <span class="total-value" id="center-total">$23,000</span>
+                        </div>
+                    </div>
+                    <div class="pie-legend" id="pie-legend">
+                        <div><span class="legend-color invested"></span> Invested: $20,000</div>
+                        <div><span class="legend-color profit"></span> Profit: $3,000</div>
+                        <div><span class="legend-color loss"></span> Loss: $0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== TRANSACTIONS SECTION ========== -->
+        <div id="transactions-section" style="display:none;">
+            <h1>Transaction History</h1>
+            <div class="subtitle">All your buy, sell and fund movement activities.</div>
+            <div class="transactions-glass">
+                <table class="transactions-table">
+                    <thead>
+                        <tr>
+                            <th>Date & Time</th>
+                            <th>Type</th>
+                            <th>Symbol</th>
+                            <th>Name</th>
+                            <th>Qty</th>
+                            <th>Price</th>
+                            <th>Total Value</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transactions-table-body">
+                        <!-- Transactions will populate here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ========== MUTUAL FUNDS SECTION ========== -->
+        <div id="mutualfunds-section" style="display:none;">
+            <h1>Mutual Fund Portfolio</h1>
+            <div class="subtitle">Review and manage your mutual fund investments.</div>
+            <div class="mutualfunds-glass">
+                <div class="mfunds-header">
+                    <span class="holdings-title">My Mutual Funds</span>
+                    <button class="add-mutualfund-btn" id="add-mutualfund-btn">+ Add Mutual Fund</button>
+                </div>
+                <table class="mutualfunds-table">
+                    <thead>
+                        <tr>
+                            <th>Fund Name</th>
+                            <th>Folio No.</th>
+                            <th>Units</th>
+                            <th>Avg Purchase NAV</th>
+                            <th>Current NAV</th>
+                            <th>Current Value</th>
+                            <th>P&amp;L</th>
+                            <th>Date Invested</th>
+                        </tr>
+                    </thead>
+                    <tbody id="mutualfunds-table-body">
+                        <tr>
+                            <td>ABC Equity Fund - Regular (G)</td>
+                            <td>12345678</td>
+                            <td>245</td>
+                            <td>$59.31</td>
+                            <td>$65.20</td>
+                            <td>$15,994.00</td>
+                            <td class="positive">+$1,443.57</td>
+                            <td>2023-10-12</td>
+                        </tr>
+                        <tr>
+                            <td>XYZ Hybrid Fund - Direct (G)</td>
+                            <td>87654321</td>
+                            <td>102</td>
+                            <td>$27.10</td>
+                            <td>$24.44</td>
+                            <td>$2,493.00</td>
+                            <td class="negative">-$272.89</td>
+                            <td>2022-06-01</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ========== CALCULATE TAX SECTION ========== -->
+        <div id="calculatetax-section" style="display:none;">
+            <h1>Tax Calculator</h1>
+            <div class="subtitle">Calculate capital gains tax on your profit/withdrawal.</div>
+            <div class="tax-glass">
+                <form class="tax-form" id="tax-form" autocomplete="off">
+                    <label>
+                        Amount ($)
+                        <input type="number" id="tax-amount" placeholder="Enter amount" min="0" required>
+                    </label>
+                    <label>
+                        Tax Percentage (%)
+                        <input type="number" id="tax-percentage" placeholder="E.g. 15" min="0" step="0.01" required>
+                    </label>
+                    <label>
+                        Exempted Amount ($)
+                        <input type="number" id="tax-exempted" placeholder="Optional, e.g. 1000" min="0">
+                    </label>
+                    <!-- More fields can be added here in the future (e.g. type of gain, holding period, etc.) -->
+                    <button type="submit" class="tax-calculate-btn">Calculate Tax</button>
+                </form>
+                <div class="tax-result" id="tax-result"></div>
+            </div>
+        </div>
+
+    </div>
+    <script src="script2.js"></script>
+</body>
+</html>
