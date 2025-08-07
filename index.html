@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Capital Catalyst Portfolio Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="website-name">Capital Catalyst</div>
+        <div class="feature-buttons">
+            <button class="feature-btn active" id="dashboard-btn">Dashboard</button>
+            <button class="feature-btn" id="visualize-btn">Visualize Portfolio</button>
+            <button class="feature-btn" id="transactions-btn">Trades</button>
+            <button class="feature-btn" id="calculatetax-btn">Calculate Tax</button>
+        </div>
+    </div>
+
+    <div class="container">
+
+        <!-- ========== DASHBOARD SECTION ========== -->
+        <div id="dashboard-section">
+            <h1>Portfolio Dashboard</h1>
+            <div class="subtitle">Track your investments and market performance!</div>
+            <div class="dashboard-cards">
+                <div class="card">
+                    <div class="label">Portfolio Value</div>
+                    <div class="value" id="portfolio-value">$<span>23000</span></div>
+                </div>
+                <div class="card">
+                    <div class="label">Total Invested</div>
+                    <div class="value" id="total-invested"><span>20000</span></div>
+                </div>
+                <div class="card">
+                    <div class="label">Total P&amp;L</div>
+                    <div class="value positive" id="total-pnl">+$3000</div>
+                </div>
+                <div class="card">
+                    <div class="label">Day Change</div>
+                    <div class="value positive" id="day-change">+$100</div>
+                </div>
+            </div>
+            <div class="holdings-section">
+                <div class="holdings-header">
+                    <div class="holdings-title">Holdings</div>
+                    <button class="add-stock-btn" id="add-stock-btn">+ Add Stock</button>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Symbol</th>
+                            <th>Name</th>
+                            <th>Qty</th>
+                            <th>Buy Price</th>
+                            <th>Current Price</th>
+                            <th>Day Change</th>
+                            <th>P&amp;L</th>
+                        </tr>
+                    </thead>
+                    <tbody id="holdings-table-body">
+                        
+                    </tbody>
+                </table>
+            </div>
+            <!-- Add Stock Modal -->
+
+<div id="add-stock-modal" class="modal" style="display:none;">
+    <div class="modal-content">
+        <span class="close-btn" id="close-stock-modal">&times;</span>
+        <h2>Add Stock</h2>
+        <form id="add-stock-form">
+            <label>
+                Ticker Symbol:
+                <input type="text" id="stock-symbol" placeholder="E.g., AAPL" required>
+            </label>
+            <label>
+                Name:
+                <input type="text" id="stock-name" placeholder="E.g., Apple Inc." required>
+            </label>
+            <label>
+                Quantity:
+                <input type="number" id="stock-quantity" placeholder="E.g., 10" min="1" required>
+            </label>
+            <label>
+                Buy Price ($):
+                <input type="number" id="stock-buy-price" placeholder="E.g., 150" min="0" step="0.01" required>
+            </label>
+            <label>
+                Buy Date:
+                <input type="date" id="stock-buy-date" required>
+            </label>
+            <button type="submit" class="submit-btn">Add Stock</button>
+        </form>
+    </div>
+</div>
+
+<!-- Buy/Sell Trade Modal -->
+  
+        </div>
+
+        <!-- ========== VISUALIZE SECTION ========== -->
+        <div id="visualize-section" style="display:none;">
+            <h1>Portfolio Overview</h1>
+            <div class="subtitle">Your key portfolio statistics in a visual snapshot</div>
+            <div class="visualize-content">
+                <div class="charts-container">
+                    <!-- Pie Chart for Investments Across Assets -->
+                    <div class="chart-box1">
+                        <h3>Investments Across Assets</h3>
+                        <canvas id="investmentsPieChart"></canvas>
+                        <div id="pie-chart-legend" style="margin-top: 16px;"></div> <!-- Custom legend container -->
+                    </div>
+                    <!-- Line Chart for Portfolio Performance -->
+                    <div class="chart-box2">
+                        <h3>Portfolio Performance</h3>
+                        <canvas id="portfolioLineChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== TRANSACTIONS SECTION ========== -->
+        <div id="transactions-section" style="display:none;">
+            <h1>Trades</h1>
+            <div class="subtitle">All your buy, sell and asset movements.</div>
+            <div class="trades-btn-section">
+                <button class="trades-add-btn" id="trades-add-btn1">+ Buy / Add</button>
+                <button class="trades-sell-btn" id="trades-sell-btn2">Sell / Remove</button>
+            </div>
+            <div class="trades-list-glass">
+                <table class="trades-table">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Symbol/Asset</th>
+                            <th>Name</th>
+                            <th>Qty</th>
+                            <th>Amount</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transactions-table-body">
+                        <!-- Populated dynamically by JS -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="trade-modal" class="modal" style="display:none;">
+                <div class="modal-content">
+                  <span class="close-btn" id="close-trade-modal">&times;</span>
+                  <h2 id="trade-modal-title">Trade</h2>
+                  <form id="trade-form">
+                    <label>
+                        Select Asset:
+                        <select id="trade-symbol" required>
+                          <option value="" disabled selected>Select a stock</option>
+                          <option value="AAPL">AAPL - Apple Inc.</option>
+                          <option value="GOOGL">GOOGL - Alphabet Inc.</option>
+                          <option value="MSFT">MSFT - Microsoft Corp.</option>
+                          <option value="TSLA">TSLA - Tesla Inc.</option>
+                          <option value="AMZN">AMZN - Amazon.com Inc.</option>
+                        </select>
+                      </label>
+                    <label>
+                      Quantity:
+                      <input type="number" id="trade-quantity" min="1" required>
+                    </label>
+                    <label>
+                      Price per Unit ($):
+                      <input type="number" id="trade-price" min="0" step="0.01" required>
+                    </label>
+                    <label>
+                      Date:
+                      <input type="date" id="trade-date" required>
+                    </label>
+                    <button type="submit" class="submit-btn" id="trade-submit-btn">Submit Trade</button>
+                  </form>
+                </div>
+              </div>
+        </div>
+
+        <!-- ========== MUTUAL FUNDS SECTION ========== -->
+        
+
+        <!-- ========== CALCULATE TAX SECTION ========== -->
+        <div id="calculatetax-section" style="display:none;">
+            <h1>Tax Calculator</h1>
+            <div class="subtitle">Calculate capital gains tax on your profit/withdrawal.</div>
+            <div class="tax-glass">
+                <form class="tax-form" id="tax-form" autocomplete="off">
+                    <label>
+                        Amount ($)
+                        <input type="number" id="tax-amount" placeholder="Enter amount" min="0" required>
+                    </label>
+                    <label>
+                        Tax Percentage (%)
+                        <input type="number" id="tax-percentage" placeholder="E.g. 15" min="0" step="0.01" required>
+                    </label>
+                    <label>
+                        Exempted Amount ($)
+                        <input type="number" id="tax-exempted" placeholder="Optional, e.g. 1000" min="0">
+                    </label>
+                    <!-- More fields can be added here in the future (e.g. type of gain, holding period, etc.) -->
+                    <button type="submit" class="tax-calculate-btn">Calculate Tax</button>
+                </form>
+                <div class="tax-result" id="tax-result"></div>
+            </div>
+        </div>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="script2.js"></script>
+</body>
+</html>
