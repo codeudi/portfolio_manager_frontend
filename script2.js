@@ -30,6 +30,138 @@ function setupTabNavigation() {
     showSection('dashboard-section');
 }
 
+// Dummy data for investments across assets
+
+
+// Dummy data for portfolio performance
+
+async function fetchInvestmentsData() {
+    try {
+        const response = await fetch('http://localhost:3000/api/investments'); // Replace with your backend API URL
+        if (!response.ok) throw new Error('Failed to fetch investments data');
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching investments data:', error.message);
+        return [];
+    }
+}
+
+async function renderInvestmentsPieChart() {
+    const investmentsData = await fetchInvestmentsData();
+
+    // Log the data being passed to the chart
+    console.log('Rendering pie chart with data:', investmentsData);
+
+    // Extract labels (asset names) and data (investment amounts)
+    const labels = investmentsData.map(asset => asset.name);
+    const data = investmentsData.map(asset => asset.investment);
+
+    // Dynamically generate colors for the chart
+    const colors = labels.map((_, index) => {
+        const hue = (index * 360) / labels.length; // Spread colors evenly across the hue spectrum
+        return `hsl(${hue}, 70%, 50%)`; // Generate HSL color
+    });
+
+    const ctx = document.getElementById('investmentsPieChart').getContext('2d');
+
+    // Create the pie chart
+    new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Investments',
+                data: data,
+                backgroundColor: colors, // Use dynamically generated colors
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: false // Disable the default Chart.js legend
+                }
+            }
+        }
+    });
+
+    // Generate a custom legend
+    const legendContainer = document.getElementById('pie-chart-legend'); // Ensure this element exists in your HTML
+    if (legendContainer) {
+        // Clear the legend container before adding new content
+        legendContainer.innerHTML = '';
+
+        legendContainer.innerHTML = investmentsData.map((asset, index) => `
+            <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                <span style="display: inline-block; width: 16px; height: 16px; background-color: ${colors[index]}; border-radius: 4px; margin-right: 8px;"></span>
+                <span>${asset.name}: $${asset.investment.toLocaleString()}</span>
+            </div>
+        `).join('');
+    }
+}
+
+async function fetchPortfolioPerformance() {
+    try {
+        const response = await fetch('http://localhost:3000/api/portfolio/performance'); // Replace with your backend API URL
+        if (!response.ok) throw new Error('Failed to fetch portfolio performance');
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching portfolio performance:', error.message);
+        return [];
+    }
+}
+
+async function renderPortfolioLineChart() {
+    const performanceData = await fetchPortfolioPerformance();
+
+    // Extract labels (dates) and data (portfolio values)
+    const labels = performanceData.map(item => item.date); // Dates
+    const data = performanceData.map(item => item.portfolio_value); // Portfolio values
+
+    const ctx = document.getElementById('portfolioLineChart').getContext('2d');
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Portfolio Value',
+                data: data,
+                borderColor: '#2c7cff',
+                backgroundColor: 'rgba(44, 124, 255, 0.2)',
+                borderWidth: 2,
+                tension: 0.4 // Smooth curve
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top'
+                }
+            },
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Date'
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Portfolio Value (Rs)'
+                    },
+                    beginAtZero: false
+                }
+            }
+        }
+    });
+}
+
+
 async function renderHoldingsWithLiveData(holdings) {
     const holdingsTable = document.querySelector('.holdings-section tbody');
     if (!holdingsTable) return;
@@ -74,6 +206,51 @@ async function renderHoldingsWithLiveData(holdings) {
             </tr>
         `;
         holdingsTable.innerHTML += newRow;
+    }
+}
+
+async function fetchtradetable() {
+    try {
+        const response = await fetch('http://localhost:3000/api/tradedata');
+        //console.log("response is :"+response.json());
+        if (!response.ok) throw new Error('Failed to fetch trade');
+        const dt=await response.json();
+        console.log("Trade data fetched:", dt);
+        return dt;
+    } catch (error) {
+        console.error('Error fetching trade:', error.message);
+        return [];
+    }
+}
+
+function renderTradeTable(data) {
+    const tradeTable = document.querySelector('.trades-list-glass tbody');
+    if (!tradeTable) return;
+
+    if (data.length === 0) {
+        tradeTable.innerHTML = `<tr><td colspan="7" style="text-align:center;">No holdings found.</td></tr>`;
+        return;
+    }
+    
+
+    tradeTable.innerHTML = ''; // Clear existing rows
+
+    for (const d of data) {
+        
+        const { type, symbol, name, qty:quantity, total:amount, datetime:date } = d;
+        console.log(`Rendering trade: ${type}, Symbol: ${symbol}, Quantity: ${quantity}, Amount: ${amount}`);
+
+        const newRow = `
+            <tr>
+                <td>${type}</td>
+                <td><a class="symbol-link" href="#">${symbol}</a></td>
+                <td>${name}</td>
+                <td>${quantity}</td>
+                <td>$${(+amount).toFixed(2)}</td>
+                <td>${date.split('T')[0]}</td>
+            </tr>
+        `;
+        tradeTable.innerHTML += newRow;
     }
 }
 
@@ -131,16 +308,13 @@ function setupAddStockModal() {
     // Handle form submission
     form.addEventListener('submit', async (event) => {
         event.preventDefault();
-
-        // Get form values
+    
         const symbol = document.getElementById('stock-symbol').value;
         const name = document.getElementById('stock-name').value;
         const quantity = parseInt(document.getElementById('stock-quantity').value, 10);
         const buyPrice = parseFloat(document.getElementById('stock-buy-price').value);
         const buyDate = document.getElementById('stock-buy-date').value;
-
-
-        // Send data to backend
+    
         try {
             const response = await fetch('http://localhost:3000/api/addasset', {
                 method: 'POST',
@@ -149,28 +323,17 @@ function setupAddStockModal() {
                 },
                 body: JSON.stringify({ symbol, name, quantity, buyPrice, buyDate }),
             });
-
+    
             if (!response.ok) throw new Error('Failed to add stock');
-
+    
             const newStock = await response.json();
-
-            // Update holdings table dynamically
-            const holdingsTable = document.querySelector('.holdings-section tbody');
-            const newRow = `
-                <tr>
-                    <td><a class="symbol-link" href="#">${newStock.symbol}</a></td>
-                    <td>${newStock.name}</td>
-                    <td>${newStock.quantity}</td>
-                    <td>$${newStock.buyPrice.toFixed(2)}</td>
-                    <td>$0.00</td>
-                    <td class="positive">+0.00 <span class="percentage-chip">(+0.00%)</span></td>
-                    <td class="positive">+$0.00 <span class="percentage-chip">(+0.00%)</span></td>
-                </tr>
-            `;
-            holdingsTable.innerHTML += newRow;
-            console.log('Stock added successfully:', newStock); 
-
-            // Close modal
+    
+            // ✅ FIX: Re-fetch holdings instead of manually appending
+            const updatedHoldings = await fetchHoldings();
+            await renderHoldingsWithLiveData(updatedHoldings);
+    
+            console.log('Stock added successfully:', newStock);
+    
             modal.style.display = 'none';
             form.reset();
         } catch (error) {
@@ -179,8 +342,91 @@ function setupAddStockModal() {
     });
 }
 
+function setupTradeModal() {
+    const modal = document.getElementById('trade-modal');
+    const closeBtn = document.getElementById('close-trade-modal');
+    const form = document.getElementById('trade-form');
+    const title = document.getElementById('trade-modal-title');
+    const submitBtn = document.getElementById('trade-submit-btn');
+    const symbolDropdown = document.getElementById('trade-symbol');
+
+    const buyBtn = document.getElementById('trades-add-btn1');
+    const sellBtn = document.getElementById('trades-sell-btn2');
+
+    let tradeType = 'Buy';
+
+    async function populateDropdown() {
+        const holdings = await fetchHoldings();
+        symbolDropdown.innerHTML = holdings.map(h => `<option value="${h.symbol}">${h.symbol} - ${h.namee}</option>`).join('');
+    }
+
+    buyBtn.addEventListener('click', async () => {
+        tradeType = 'Buy';
+        title.textContent = 'Buy / Add Asset';
+        submitBtn.textContent = 'Buy';
+        await populateDropdown();
+        modal.style.display = 'block';
+    });
+
+    sellBtn.addEventListener('click', async () => {
+        tradeType = 'Sell';
+        title.textContent = 'Sell / Remove Asset';
+        submitBtn.textContent = 'Sell';
+        await populateDropdown();
+        modal.style.display = 'block';
+    });
+
+    closeBtn.addEventListener('click', () => {
+        modal.style.display = 'none';
+    });
+
+    window.addEventListener('click', (e) => {
+        if (e.target === modal) modal.style.display = 'none';
+    });
+
+    // ✅ Correct place to simulate trade: inside form submission
+    form.addEventListener('submit', async (e) => {
+        console.log('Trade form submitted');
+        e.preventDefault();
+        const symbol = symbolDropdown.value;
+        const name = symbol; // Placeholder, can be fetched from holdings if needed
+            const quantity = parseInt(document.getElementById('trade-quantity').value);
+            const price = parseFloat(document.getElementById('trade-price').value);
+            const date = document.getElementById('trade-date').value || new Date().toISOString().split('T')[0];
+            let total= quantity * price;
+
+            console.log('Trade data:', { symbol, name, quantity, price, total, tradeType, date });
+
+        try {
+        
+            const response = await fetch('http://localhost:3000/api/addtrade', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ symbol, name, quantity, price, total , tradeType, date }),
+            });
+
+            if (!response.ok) throw new Error('Failed to add stock');
+    
+            const newtrade = await response.json();
+            console.log('New trade:', newtrade);
+            // ✅ FIX: Re-fetch holdings instead of manually appending
+            const updatedTable = await fetchtradetable();
+            renderTradeTable(updatedTable);
+    
+            console.log('Trade added successfully:', newtrade);
+    
+            modal.style.display = 'none';
+            form.reset();
+        } catch (error) {
+            console.error('Error adding trade:', error.message);
+        }
+    });
+}
+
+
 // Initialize modal logic
-setupAddStockModal();
 
 // ========== Fetch Portfolio Metrics ==========
 async function fetchPortfolioMetrics() {
@@ -294,8 +540,8 @@ function startPeriodicUpdates(interval = 5000) {
         const portfolioMetrics = await fetchPortfolioMetrics();
         renderPortfolioMetrics(portfolioMetrics);
 
-        const transactions = await fetchTransactions();
-        renderTransactions(transactions);
+        const trade = await fetchtradetable();
+        renderTradeTable(trade);
     }, interval);
 }
 
@@ -303,18 +549,22 @@ function startPeriodicUpdates(interval = 5000) {
 async function initializeApp() {
     setupTabNavigation();
     setupAddStockModal();
+    setupTradeModal();
 
-    const holdings = await fetchHoldings();
-    await renderHoldingsWithLiveData(holdings); // Render holdings with live data
+        const holdings = await fetchHoldings();
+        await renderHoldingsWithLiveData(holdings); // Render holdings with live data
 
-    const portfolioMetrics = await fetchPortfolioMetrics();
-    renderPortfolioMetrics(portfolioMetrics);
+        const portfolioMetrics = await fetchPortfolioMetrics();
+        renderPortfolioMetrics(portfolioMetrics);
 
-    const transactions = await fetchTransactions();
-    renderTransactions(transactions);
+        const trade = await fetchtradetable();
+        renderTradeTable(trade);
 
-    startPeriodicUpdates(); // Start periodic updates every 5 seconds
-}
+        await renderInvestmentsPieChart(); // Render investments pie chart
+        await renderPortfolioLineChart(); // Render portfolio performance line chart
+
+        startPeriodicUpdates(); // Start periodic updates every 5 seconds
+    }
 
 // Start the app
 initializeApp();

@@ -13,8 +13,7 @@
         <div class="feature-buttons">
             <button class="feature-btn active" id="dashboard-btn">Dashboard</button>
             <button class="feature-btn" id="visualize-btn">Visualize Portfolio</button>
-            <button class="feature-btn" id="transactions-btn">Transactions</button>
-            <button class="feature-btn" id="mutualfunds-btn">Mutual Funds</button>
+            <button class="feature-btn" id="transactions-btn">Trades</button>
             <button class="feature-btn" id="calculatetax-btn">Calculate Tax</button>
         </div>
     </div>
@@ -60,7 +59,7 @@
                             <th>P&amp;L</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="holdings-table-body">
                         
                     </tbody>
                 </table>
@@ -95,6 +94,8 @@
         </form>
     </div>
 </div>
+<!-- Buy/Sell Trade Modal -->
+  
         </div>
 
         <!-- ========== VISUALIZE SECTION ========== -->
@@ -102,18 +103,17 @@
             <h1>Portfolio Overview</h1>
             <div class="subtitle">Your key portfolio statistics in a visual snapshot</div>
             <div class="visualize-content">
-                <div class="glass-pie">
-                    <div class="pie-chart-outer">
-                        <div class="pie-chart-animated" id="pieChart"></div>
-                        <div class="pie-center-label">
-                            <span class="total-label">Portfolio<br>Value</span>
-                            <span class="total-value" id="center-total">$23,000</span>
-                        </div>
+                <div class="charts-container">
+                    <!-- Pie Chart for Investments Across Assets -->
+                    <div class="chart-box1">
+                        <h3>Investments Across Assets</h3>
+                        <canvas id="investmentsPieChart"></canvas>
+                        <div id="pie-chart-legend" style="margin-top: 16px;"></div> <!-- Custom legend container -->
                     </div>
-                    <div class="pie-legend" id="pie-legend">
-                        <div><span class="legend-color invested"></span> Invested: $20,000</div>
-                        <div><span class="legend-color profit"></span> Profit: $3,000</div>
-                        <div><span class="legend-color loss"></span> Loss: $0</div>
+                    <!-- Line Chart for Portfolio Performance -->
+                    <div class="chart-box2">
+                        <h3>Portfolio Performance</h3>
+                        <canvas id="portfolioLineChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -121,75 +121,58 @@
 
         <!-- ========== TRANSACTIONS SECTION ========== -->
         <div id="transactions-section" style="display:none;">
-            <h1>Transaction History</h1>
-            <div class="subtitle">All your buy, sell and fund movement activities.</div>
-            <div class="transactions-glass">
-                <table class="transactions-table">
+            <h1>Trades</h1>
+            <div class="subtitle">All your buy, sell and asset movements.</div>
+            <div class="trades-btn-section">
+                <button class="trades-add-btn" id="trades-add-btn1">+ Buy / Add</button>
+                <button class="trades-sell-btn" id="trades-sell-btn2">Sell / Remove</button>
+            </div>
+            <div class="trades-list-glass">
+                <table class="trades-table">
                     <thead>
                         <tr>
-                            <th>Date & Time</th>
                             <th>Type</th>
-                            <th>Symbol</th>
+                            <th>Symbol/Asset</th>
                             <th>Name</th>
                             <th>Qty</th>
-                            <th>Price</th>
-                            <th>Total Value</th>
+                            <th>Amount</th>
+                            <th>Date</th>
                         </tr>
                     </thead>
                     <tbody id="transactions-table-body">
-                        <!-- Transactions will populate here -->
+                        <!-- Populated dynamically by JS -->
                     </tbody>
                 </table>
             </div>
+            <div id="trade-modal" class="modal" style="display:none;">
+                <div class="modal-content">
+                  <span class="close-btn" id="close-trade-modal">&times;</span>
+                  <h2 id="trade-modal-title">Trade</h2>
+                  <form id="trade-form">
+                    <label>
+                      Select Asset:
+                      <select id="trade-symbol" required></select>
+                    </label>
+                    <label>
+                      Quantity:
+                      <input type="number" id="trade-quantity" min="1" required>
+                    </label>
+                    <label>
+                      Price per Unit ($):
+                      <input type="number" id="trade-price" min="0" step="0.01" required>
+                    </label>
+                    <label>
+                      Date:
+                      <input type="date" id="trade-date" required>
+                    </label>
+                    <button type="submit" class="submit-btn" id="trade-submit-btn">Submit Trade</button>
+                  </form>
+                </div>
+              </div>
         </div>
 
         <!-- ========== MUTUAL FUNDS SECTION ========== -->
-        <div id="mutualfunds-section" style="display:none;">
-            <h1>Mutual Fund Portfolio</h1>
-            <div class="subtitle">Review and manage your mutual fund investments.</div>
-            <div class="mutualfunds-glass">
-                <div class="mfunds-header">
-                    <span class="holdings-title">My Mutual Funds</span>
-                    <button class="add-mutualfund-btn" id="add-mutualfund-btn">+ Add Mutual Fund</button>
-                </div>
-                <table class="mutualfunds-table">
-                    <thead>
-                        <tr>
-                            <th>Fund Name</th>
-                            <th>Folio No.</th>
-                            <th>Units</th>
-                            <th>Avg Purchase NAV</th>
-                            <th>Current NAV</th>
-                            <th>Current Value</th>
-                            <th>P&amp;L</th>
-                            <th>Date Invested</th>
-                        </tr>
-                    </thead>
-                    <tbody id="mutualfunds-table-body">
-                        <tr>
-                            <td>ABC Equity Fund - Regular (G)</td>
-                            <td>12345678</td>
-                            <td>245</td>
-                            <td>$59.31</td>
-                            <td>$65.20</td>
-                            <td>$15,994.00</td>
-                            <td class="positive">+$1,443.57</td>
-                            <td>2023-10-12</td>
-                        </tr>
-                        <tr>
-                            <td>XYZ Hybrid Fund - Direct (G)</td>
-                            <td>87654321</td>
-                            <td>102</td>
-                            <td>$27.10</td>
-                            <td>$24.44</td>
-                            <td>$2,493.00</td>
-                            <td class="negative">-$272.89</td>
-                            <td>2022-06-01</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+        
 
         <!-- ========== CALCULATE TAX SECTION ========== -->
         <div id="calculatetax-section" style="display:none;">
@@ -217,6 +200,7 @@
         </div>
 
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="script2.js"></script>
 </body>
 </html>
